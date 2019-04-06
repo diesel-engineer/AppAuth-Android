@@ -361,12 +361,16 @@ public final class LoginActivity extends AppCompatActivity {
                     PendingIntent.getActivity(this, 0, cancelIntent, 0),
                     mAuthIntent.get());
         } else {
-            Intent viewIntent = new Intent(Intent.ACTION_VIEW, mAuthRequest.get().toUri());
-            Intent intent = AuthorizationManagementActivity.createStartForResultIntent(this, mAuthRequest.get(),
-                viewIntent);
-//            Intent intent = mAuthService.getAuthorizationRequestIntent(
-//                    mAuthRequest.get(),
-//                    mAuthIntent.get());
+            Intent intent;
+            if (mBrowserMatcher == AnyBrowserMatcher.INSTANCE) {
+                Intent viewIntent = new Intent(Intent.ACTION_VIEW, mAuthRequest.get().toUri());
+                intent = AuthorizationManagementActivity.createStartForResultIntent(this, mAuthRequest.get(),
+                    viewIntent);
+            } else {
+                intent = mAuthService.getAuthorizationRequestIntent(
+                    mAuthRequest.get(),
+                    mAuthIntent.get());
+            }
             startActivityForResult(intent, RC_AUTH);
         }
     }

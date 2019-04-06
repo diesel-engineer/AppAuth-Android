@@ -67,6 +67,8 @@ public final class Configuration {
     private Uri mTokenEndpointUri;
     private Uri mRegistrationEndpointUri;
     private Uri mUserInfoEndpointUri;
+    private Uri mUserProfileEndpointUri;
+    private Uri mUserMembershipEndpointUri;
     private boolean mHttpsRequired;
 
     public static Configuration getInstance(Context context) {
@@ -162,6 +164,14 @@ public final class Configuration {
         return mUserInfoEndpointUri;
     }
 
+    public Uri getUserProfileEndpointUri() {
+        return mUserProfileEndpointUri;
+    }
+
+    public Uri getUserMembershipEndpointUri() {
+        return mUserMembershipEndpointUri;
+    }
+
     public boolean isHttpsRequired() {
         return mHttpsRequired;
     }
@@ -217,7 +227,8 @@ public final class Configuration {
         } else {
             mDiscoveryUri = getRequiredConfigWebUri("discovery_uri");
         }
-
+        mUserProfileEndpointUri = getRequiredConfigWebUri("user_profile_endpoint_uri");
+        mUserMembershipEndpointUri = getRequiredConfigWebUri("user_membership_endpoint_uri");
         mHttpsRequired = mConfigJson.optBoolean("https_required", true);
     }
 
