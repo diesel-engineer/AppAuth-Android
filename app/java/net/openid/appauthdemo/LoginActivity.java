@@ -45,6 +45,7 @@ import android.widget.TextView;
 import net.openid.appauth.AppAuthConfiguration;
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
+import net.openid.appauth.AuthorizationManagementActivity;
 import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
@@ -360,9 +361,12 @@ public final class LoginActivity extends AppCompatActivity {
                     PendingIntent.getActivity(this, 0, cancelIntent, 0),
                     mAuthIntent.get());
         } else {
-            Intent intent = mAuthService.getAuthorizationRequestIntent(
-                    mAuthRequest.get(),
-                    mAuthIntent.get());
+            Intent viewIntent = new Intent(Intent.ACTION_VIEW, mAuthRequest.get().toUri());
+            Intent intent = AuthorizationManagementActivity.createStartForResultIntent(this, mAuthRequest.get(),
+                viewIntent);
+//            Intent intent = mAuthService.getAuthorizationRequestIntent(
+//                    mAuthRequest.get(),
+//                    mAuthIntent.get());
             startActivityForResult(intent, RC_AUTH);
         }
     }
@@ -480,6 +484,7 @@ public final class LoginActivity extends AppCompatActivity {
         }
 
         mAuthRequest.set(authRequestBuilder.build());
+        Log.i(TAG, "Created auth request for login : " + authRequestBuilder.build().toUri().toString());
     }
 
     private String getLoginHint() {
