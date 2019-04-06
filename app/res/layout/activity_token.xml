@@ -165,7 +165,7 @@
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:id="@+id/userinfo_profile"
+                            android:id="@+id/userinfo_avatar"
                             android:contentDescription="@string/userinfo_profile_content_description"
                             app:srcCompat="@drawable/unknown_user_48dp" />
 
@@ -182,12 +182,102 @@
 
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/userinfo_json"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        tools:text="{'blah': 'blah'}" />
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="130dp"
+                            style="@style/Base.TextAppearance.AppCompat.Subhead"
+                            android:layout_height="wrap_content"
+                            android:text="User ID:"/>
+                        <TextView
+                            android:id="@+id/userinfo_id"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="130dp"
+                            style="@style/Base.TextAppearance.AppCompat.Subhead"
+                            android:layout_height="wrap_content"
+                            android:text="CSN:"/>
+                        <TextView
+                            android:id="@+id/userinfo_csn"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="130dp"
+                            style="@style/Base.TextAppearance.AppCompat.Subhead"
+                            android:layout_height="wrap_content"
+                            android:text="Phone number:"/>
+                        <TextView
+                            android:id="@+id/userinfo_phone_number"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="130dp"
+                            style="@style/Base.TextAppearance.AppCompat.Subhead"
+                            android:layout_height="wrap_content"
+                            android:text="Default card:"/>
+                        <TextView
+                            android:id="@+id/userinfo_default_card"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="130dp"
+                            style="@style/Base.TextAppearance.AppCompat.Subhead"
+                            android:layout_height="wrap_content"
+                            android:text="Membership tier:"/>
+                        <TextView
+                            android:id="@+id/userinfo_membership_tier"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="130dp"
+                            style="@style/Base.TextAppearance.AppCompat.Subhead"
+                            android:layout_height="wrap_content"
+                            android:text="Point balance:"/>
+                        <TextView
+                            android:id="@+id/userinfo_point_balance"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
