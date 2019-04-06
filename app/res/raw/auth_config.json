@@ -1,7 +1,7 @@
 {
-  "client_id": "vinsmart-oauth2-client",
+  "client_id": "vinsmart-client",
   "redirect_uri": "dev.vinid.appauthdemo:/oauth2redirect",
-  "authorization_scope": "openid offline",
+  "authorization_scope": "openid offline profile membership.readonly profile.readonly",
   "discovery_uri": "https://oauth.vinid.dev/.well-known/openid-configuration",
   "authorization_endpoint_uri": "",
   "token_endpoint_uri": "",
