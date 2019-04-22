@@ -254,18 +254,22 @@ public class TokenActivity extends AppCompatActivity {
         JSONObject userInfo = mUserInfoJson.get();
         JSONObject userProfile = mUserProfileJson.get();
         JSONObject userMembership = mUserMembershipJson.get();
-        if (userProfile == null || userMembership == null || userInfo == null) {
-            Log.e(TAG, "displayUserInfo: null data . " + userProfile + " " + userMembership + " " + userInfo);
+        if (userProfile == null && userMembership == null && userInfo == null) {
+            Log.e(TAG, "displayUserInfo: null data");
             userInfoCard.setVisibility(View.INVISIBLE);
         } else {
             try {
-                ((TextView) findViewById(R.id.userinfo_name)).setText(userProfile.getJSONObject("data").getString("full_name"));
-                ((TextView) findViewById(R.id.userinfo_phone_number)).setText(userProfile.getJSONObject("data").getString("phone_number"));
-                ((TextView) findViewById(R.id.userinfo_csn)).setText(userProfile.getJSONObject("data").getString("csn"));
-                ((TextView) findViewById(R.id.userinfo_id)).setText(userProfile.getJSONObject("data").getString("id"));
-                ((TextView) findViewById(R.id.userinfo_default_card)).setText(userMembership.getJSONObject("data").getString("default_card_code"));
-                ((TextView) findViewById(R.id.userinfo_point_balance)).setText(userMembership.getJSONObject("data").getString("balance"));
-                ((TextView) findViewById(R.id.userinfo_membership_tier)).setText(userMembership.getJSONObject("data").getString("membership_tier"));
+                if (userProfile != null) {
+                    ((TextView) findViewById(R.id.userinfo_name)).setText(userProfile.getJSONObject("data").getString("full_name"));
+                    ((TextView) findViewById(R.id.userinfo_phone_number)).setText(userProfile.getJSONObject("data").getString("phone_number"));
+                    ((TextView) findViewById(R.id.userinfo_csn)).setText(userProfile.getJSONObject("data").getString("csn"));
+                    ((TextView) findViewById(R.id.userinfo_id)).setText(userProfile.getJSONObject("data").getString("id"));
+                }
+                if (userMembership != null) {
+                    ((TextView) findViewById(R.id.userinfo_default_card)).setText(userMembership.getJSONObject("data").getString("default_card_code"));
+                    ((TextView) findViewById(R.id.userinfo_point_balance)).setText(userMembership.getJSONObject("data").getString("balance"));
+                    ((TextView) findViewById(R.id.userinfo_membership_tier)).setText(userMembership.getJSONObject("data").getString("membership_tier"));
+                }
                 userInfoCard.setVisibility(View.VISIBLE);
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed to read JSON", ex);
