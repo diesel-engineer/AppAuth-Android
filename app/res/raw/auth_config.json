@@ -1,5 +1,5 @@
 {
-  "client_id": "vsmart-sso-client",
+  "client_id": "",
   "redirect_uri": "dev.vinid.appauthdemo:/oauth2redirect",
   "authorization_scope": "openid offline profile membership.readonly profile.readonly",
   "discovery_uri": "https://oauth.vinid.dev/.well-known/openid-configuration",
