@@ -65,10 +65,14 @@ public class TokenActivity extends AppCompatActivity {
     private static final String TAG = "TokenActivity";
 
     private static final String KEY_USER_INFO = "userInfo";
+    private static final String KEY_USER_PROFILE = "userProfile";
+    private static final String KEY_USER_MEMBERSHIP = "userMembership";
 
     private AuthorizationService mAuthService;
     private AuthStateManager mStateManager;
     private final AtomicReference<JSONObject> mUserInfoJson = new AtomicReference<>();
+    private final AtomicReference<JSONObject> mUserProfileJson = new AtomicReference<>();
+    private final AtomicReference<JSONObject> mUserMembershipJson = new AtomicReference<>();
     private ExecutorService mExecutor;
     private Configuration mConfiguration;
 
@@ -103,6 +107,8 @@ public class TokenActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             try {
                 mUserInfoJson.set(new JSONObject(savedInstanceState.getString(KEY_USER_INFO)));
+                mUserProfileJson.set(new JSONObject(savedInstanceState.getString(KEY_USER_PROFILE)));
+                mUserMembershipJson.set(new JSONObject(savedInstanceState.getString(KEY_USER_MEMBERSHIP)));
             } catch (JSONException ex) {
                 Log.e(TAG, "Failed to parse saved user info JSON, discarding", ex);
             }
@@ -150,6 +156,12 @@ public class TokenActivity extends AppCompatActivity {
         // jarring UX when these events occur - data does not just disappear from the view.
         if (mUserInfoJson.get() != null) {
             state.putString(KEY_USER_INFO, mUserInfoJson.toString());
+        }
+        if (mUserProfileJson.get() != null) {
+            state.putString(KEY_USER_PROFILE, mUserProfileJson.toString());
+        }
+        if (mUserMembershipJson.get() != null) {
+            state.putString(KEY_USER_MEMBERSHIP, mUserMembershipJson.toString());
         }
     }
 
@@ -233,29 +245,34 @@ public class TokenActivity extends AppCompatActivity {
 
         ((Button)findViewById(R.id.sign_out)).setOnClickListener((View view) -> signOut());
 
+        displayUserInfo();
+    }
+
+    @MainThread
+    private void displayUserInfo() {
         View userInfoCard = findViewById(R.id.userinfo_card);
         JSONObject userInfo = mUserInfoJson.get();
-        if (userInfo == null) {
+        JSONObject userProfile = mUserProfileJson.get();
+        JSONObject userMembership = mUserMembershipJson.get();
+        if (userProfile == null && userMembership == null && userInfo == null) {
+            Log.e(TAG, "displayUserInfo: null data");
             userInfoCard.setVisibility(View.INVISIBLE);
         } else {
             try {
-                String name = "???";
-                if (userInfo.has("name")) {
-                    name = userInfo.getString("name");
+                if (userProfile != null) {
+                    ((TextView) findViewById(R.id.userinfo_name)).setText(userProfile.getJSONObject("data").getString("full_name"));
+                    ((TextView) findViewById(R.id.userinfo_phone_number)).setText(userProfile.getJSONObject("data").getString("phone_number"));
+                    ((TextView) findViewById(R.id.userinfo_csn)).setText(userProfile.getJSONObject("data").getString("csn"));
+                    ((TextView) findViewById(R.id.userinfo_id)).setText(userProfile.getJSONObject("data").getString("id"));
                 }
-                ((TextView) findViewById(R.id.userinfo_name)).setText(name);
-
-                if (userInfo.has("picture")) {
-                    GlideApp.with(TokenActivity.this)
-                            .load(Uri.parse(userInfo.getString("picture")))
-                            .fitCenter()
-                            .into((ImageView) findViewById(R.id.userinfo_profile));
+                if (userMembership != null) {
+                    ((TextView) findViewById(R.id.userinfo_default_card)).setText(userMembership.getJSONObject("data").getString("default_card_code"));
+                    ((TextView) findViewById(R.id.userinfo_point_balance)).setText(userMembership.getJSONObject("data").getString("balance"));
+                    ((TextView) findViewById(R.id.userinfo_membership_tier)).setText(userMembership.getJSONObject("data").getString("membership_tier"));
                 }
-
-                ((TextView) findViewById(R.id.userinfo_json)).setText(mUserInfoJson.toString());
                 userInfoCard.setVisibility(View.VISIBLE);
             } catch (JSONException ex) {
-                Log.e(TAG, "Failed to read userinfo JSON", ex);
+                Log.e(TAG, "Failed to read JSON", ex);
             }
         }
     }
@@ -331,10 +348,13 @@ public class TokenActivity extends AppCompatActivity {
     private void fetchUserInfo() {
         displayLoading("Fetching user info");
         mStateManager.getCurrent().performActionWithFreshTokens(mAuthService, this::fetchUserInfo);
+        mStateManager.getCurrent().performActionWithFreshTokens(mAuthService, this::fetchUserMembership);
+        mStateManager.getCurrent().performActionWithFreshTokens(mAuthService, this::fetchUserProfile);
     }
 
     @MainThread
     private void fetchUserInfo(String accessToken, String idToken, AuthorizationException ex) {
+        Log.i(TAG, "Fetching user info ...");
         if (ex != null) {
             Log.e(TAG, "Token refresh failed when fetching user info");
             mUserInfoJson.set(null);
@@ -369,6 +389,7 @@ public class TokenActivity extends AppCompatActivity {
                 String response = Okio.buffer(Okio.source(conn.getInputStream()))
                         .readString(Charset.forName("UTF-8"));
                 mUserInfoJson.set(new JSONObject(response));
+                Log.i(TAG, "Fetched user info");
             } catch (IOException ioEx) {
                 Log.e(TAG, "Network error when querying userinfo endpoint", ioEx);
                 showSnackbar("Fetching user info failed");
@@ -377,6 +398,88 @@ public class TokenActivity extends AppCompatActivity {
                 showSnackbar("Failed to parse user info");
             }
 
+            runOnUiThread(this::displayAuthorized);
+        });
+    }
+
+    @MainThread
+    private void fetchUserProfile(String accessToken, String idToken, AuthorizationException ex) {
+        Log.i(TAG, "Fetching user profile ...");
+        if (ex != null) {
+            Log.e(TAG, "Token refresh failed when fetching user profile");
+            mUserProfileJson.set(null);
+            runOnUiThread(this::displayAuthorized);
+            return;
+        }
+
+        URL userProfileEndpoint;
+        try {
+            userProfileEndpoint = new URL(mConfiguration.getUserProfileEndpointUri().toString());
+        } catch (MalformedURLException urlEx) {
+            Log.e(TAG, "Failed to construct user membership endpoint URL", urlEx);
+            mUserProfileJson.set(null);
+            runOnUiThread(this::displayAuthorized);
+            return;
+        }
+
+        mExecutor.submit(() -> {
+            try {
+                HttpURLConnection conn =
+                    (HttpURLConnection) userProfileEndpoint.openConnection();
+                conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+                conn.setInstanceFollowRedirects(false);
+                String response = Okio.buffer(Okio.source(conn.getInputStream()))
+                    .readString(Charset.forName("UTF-8"));
+                mUserProfileJson.set(new JSONObject(response));
+                Log.i(TAG, "Fetched user profile");
+            } catch (IOException ioEx) {
+                Log.e(TAG, "Network error when querying user profile endpoint", ioEx);
+                showSnackbar("Fetching user info failed");
+            } catch (JSONException jsonEx) {
+                Log.e(TAG, "Failed to parse user profile response");
+                showSnackbar("Failed to parse user profile");
+            }
+            runOnUiThread(this::displayAuthorized);
+        });
+    }
+
+    @MainThread
+    private void fetchUserMembership(String accessToken, String idToken, AuthorizationException ex) {
+        Log.i(TAG, "Fetching user membership ...");
+        if (ex != null) {
+            Log.e(TAG, "Token refresh failed when fetching user membership");
+            mUserMembershipJson.set(null);
+            runOnUiThread(this::displayAuthorized);
+            return;
+        }
+
+        URL userMembershipEndpoint;
+        try {
+            userMembershipEndpoint = new URL(mConfiguration.getUserMembershipEndpointUri().toString());
+        } catch (MalformedURLException urlEx) {
+            Log.e(TAG, "Failed to construct user membership endpoint URL", urlEx);
+            mUserMembershipJson.set(null);
+            runOnUiThread(this::displayAuthorized);
+            return;
+        }
+
+        mExecutor.submit(() -> {
+            try {
+                HttpURLConnection conn =
+                    (HttpURLConnection) userMembershipEndpoint.openConnection();
+                conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+                conn.setInstanceFollowRedirects(false);
+                String response = Okio.buffer(Okio.source(conn.getInputStream()))
+                    .readString(Charset.forName("UTF-8"));
+                mUserMembershipJson.set(new JSONObject(response));
+                Log.i(TAG, "Fetched user membership");
+            } catch (IOException ioEx) {
+                Log.e(TAG, "Network error when querying user membership endpoint", ioEx);
+                showSnackbar("Fetching user info failed");
+            } catch (JSONException jsonEx) {
+                Log.e(TAG, "Failed to parse user membership response");
+                showSnackbar("Failed to parse user membership");
+            }
             runOnUiThread(this::displayAuthorized);
         });
     }

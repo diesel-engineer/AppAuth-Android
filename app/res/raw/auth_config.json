@@ -1,11 +1,13 @@
 {
   "client_id": "",
-  "redirect_uri": "net.openid.appauthdemo:/oauth2redirect",
-  "authorization_scope": "openid email profile",
-  "discovery_uri": "",
+  "redirect_uri": "dev.vinid.appauthdemo:/oauth2redirect",
+  "authorization_scope": "openid offline profile membership.readonly profile.readonly",
+  "discovery_uri": "https://oauth.vinid.dev/.well-known/openid-configuration",
   "authorization_endpoint_uri": "",
   "token_endpoint_uri": "",
   "registration_endpoint_uri": "",
   "user_info_endpoint_uri": "",
+  "user_profile_endpoint_uri": "https://api.dev.id.vin/account/v1/me/profile",
+  "user_membership_endpoint_uri": "https://api.dev.id.vin/loyalty/v1/me/membership",
   "https_required": true
 }
